@@ -115,10 +115,9 @@ class Generator_Model(tf.keras.Model):
         initializer = tf.random_normal_initializer(stddev=0.2)
         self.net = tf.keras.Sequential()
         self.net.add(Dense((4*4*512), use_bias = False, input_shape = (args.z_dim,), kernel_initializer = initializer))
-        self.net.add(BatchNormalization())
         self.net.add(LeakyReLU(alpha=.02))
         self.net.add(Reshape((4,4,512)))
-        self.net.add(Conv2DTranspose(256, (5, 5), strides=(2,2), padding='same', kernel_initializer = initializer))
+        self.net.add(Conv2DTranspose(256, (5, 5), use_bias = False, strides=(2,2), padding='same', kernel_initializer = initializer))
         self.net.add(BatchNormalization())
         self.net.add(LeakyReLU(alpha=.02))
         self.net.add(Conv2DTranspose(128, (5,5), strides=(2,2), padding='same', kernel_initializer = initializer))
@@ -176,8 +175,12 @@ class Discriminator_Model(tf.keras.Model):
         self.net.add(Conv2D(256, (5,5), strides=(2,2), padding = 'same', kernel_initializer = initializer))
         self.net.add(BatchNormalization())
         self.net.add(LeakyReLU(alpha=0.02))
-        self.net.add(Conv2D(512, (5,5), strides=(2,2), padding = 'same', activation='sigmoid'))
+        self.net.add(Conv2D(512, (5,5), strides=(2,2), padding = 'same'))
         self.net.add(BatchNormalization())
+        self.net.add(LeakyReLU(alpha=0.02))
+        self.net.add(Flatten())
+        self.net.add(Dense(1, activation='sigmoid'))
+
 
         self.cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=args.learn_rate, beta_1=args.beta1)
@@ -229,20 +232,24 @@ def train(generator, discriminator, dataset_iterator, manager):
     for iteration, batch in enumerate(pbar):
 
         # Test this
-        noise = tf.random.uniform([args.batch_size, args.z_dim], minval=-1, maxval=1)
+        noise = tf.random.normal([args.batch_size, args.z_dim])
         with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
+
             generated = generator(noise, training=True)
+
             real_checked = discriminator(batch, training=True)
             fake_checked = discriminator(generated, training=True)
+
             gen_loss = generator.loss_function(fake_checked)
             disc_loss = discriminator.loss_function(real_checked, fake_checked)
+
         pbar.set_description("g_loss: {:1.3f}, d_loss: {:1.3f}".format(gen_loss, disc_loss))
         gen_gradients = gen_tape.gradient(gen_loss, generator.trainable_variables)
         disc_gradients = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
         # Save
         generator.optimizer.apply_gradients(zip(gen_gradients, generator.trainable_variables))
         if iteration % 2 == 0:
-            discriminator.optimizer.apply_gradients(zip(gen_gradients, generator.trainable_variables))
+            discriminator.optimizer.apply_gradients(zip(disc_gradients, discriminator.trainable_variables))
 
         if iteration % args.save_every == 0:
             manager.save()
@@ -271,7 +278,7 @@ def test(generator):
     :return: None
     """
     # TODO: Replace 'None' with code to sample a batch of random images
-    img = np.array(generator(tf.random.uniform([args.batch_size, args.z_dim], minval=-1, maxval=1)))    
+    img = np.array(generator(tf.random.normal([args.batch_size, args.z_dim])))    
 
     ### Below, we've already provided code to save these generated images to files on disk
     # Rescale the image from (-1, 1) to (0, 255)
