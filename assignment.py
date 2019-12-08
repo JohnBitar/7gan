@@ -179,7 +179,7 @@ class Discriminator_Model(tf.keras.Model):
         self.net.add(BatchNormalization())
         self.net.add(LeakyReLU(alpha=0.02))
         self.net.add(Flatten())
-        self.net.add(Dense(1, activation='sigmoid'))
+        self.net.add(Dense(1))
 
 
         self.cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
