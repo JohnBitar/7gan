@@ -156,7 +156,7 @@ class Generator_Model(tf.keras.Model):
         :return: loss, the cross entropy loss, scalar
         """
         
-        return self.cross_entropy(tf.ones_like(disc_fake_output), disc_fake_output)
+        return tf.reduce_mean(self.cross_entropy(tf.ones_like(disc_fake_output), disc_fake_output))
 
 
 class Discriminator_Model(tf.keras.Model):
@@ -202,8 +202,8 @@ class Discriminator_Model(tf.keras.Model):
 
         :return: loss, the combined cross entropy loss, scalar
         """
-        real = self.cross_entropy(tf.ones_like(disc_real_output), disc_real_output)
-        fake = self.cross_entropy(tf.zeros_like(disc_fake_output), disc_fake_output)
+        real = tf.reduce_mean(self.cross_entropy(tf.ones_like(disc_real_output), disc_real_output))
+        fake = tf.reduce_mean(self.cross_entropy(tf.zeros_like(disc_fake_output), disc_fake_output))
         return real + fake
 
 ## --------------------------------------------------------------------------------------
