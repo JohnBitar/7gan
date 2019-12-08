@@ -208,6 +208,7 @@ class Discriminator_Model(tf.keras.Model):
 # Train the model for one epoch.
 def train(generator, discriminator, dataset_iterator, manager):
     """
+
     Train the model for one epoch. Save a checkpoint every 500 or so batches.
 
     :param generator: generator model
@@ -224,6 +225,7 @@ def train(generator, discriminator, dataset_iterator, manager):
     pbar = tqdm(dataset_iterator, total=1582)
     for iteration, batch in pbar:
 
+        # Test this
         noise = tf.random.uniform([args.batch_size, args.z_dim], minval=-1, maxval=1)
         with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
             generated = generator(noise, training=True)
