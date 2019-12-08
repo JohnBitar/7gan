@@ -129,7 +129,7 @@ class Generator_Model(tf.keras.Model):
         self.net.add(LeakyReLU(alpha=.02))
         self.net.add(Conv2DTranspose(3, (5,5), strides=(2,2), padding='same', activation='tanh'))
 
-        self.cross_entropy = tf.keras.losses.BinaryCrossentropy()
+        self.cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=args.learn_rate, beta_1=args.beta1)
 
     @tf.function
@@ -156,7 +156,7 @@ class Generator_Model(tf.keras.Model):
         :return: loss, the cross entropy loss, scalar
         """
         
-        return tf.reduce_mean(self.cross_entropy(tf.ones_like(disc_fake_output), disc_fake_output))
+        return self.cross_entropy(tf.ones_like(disc_fake_output), disc_fake_output)
 
 
 class Discriminator_Model(tf.keras.Model):
@@ -179,7 +179,7 @@ class Discriminator_Model(tf.keras.Model):
         self.net.add(Conv2D(512, (5,5), strides=(2,2), padding = 'same', activation='sigmoid'))
         self.net.add(BatchNormalization())
 
-        self.cross_entropy = tf.keras.losses.BinaryCrossentropy()
+        self.cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=args.learn_rate, beta_1=args.beta1)
 
     @tf.function
@@ -202,8 +202,8 @@ class Discriminator_Model(tf.keras.Model):
 
         :return: loss, the combined cross entropy loss, scalar
         """
-        real = tf.reduce_mean(self.cross_entropy(tf.ones_like(disc_real_output), disc_real_output))
-        fake = tf.reduce_mean(self.cross_entropy(tf.zeros_like(disc_fake_output), disc_fake_output))
+        real = self.cross_entropy(tf.ones_like(disc_real_output), disc_real_output)
+        fake = self.cross_entropy(tf.zeros_like(disc_fake_output), disc_fake_output)
         return real + fake
 
 ## --------------------------------------------------------------------------------------
