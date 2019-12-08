@@ -13,6 +13,7 @@ import argparse
 
 # Killing optional CPU driver warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TFHUB_DOWNLOAD_PROGRESS'] = "1"
 
 gpu_available = tf.test.is_gpu_available()
 print("GPU Available: ", gpu_available)
