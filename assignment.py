@@ -226,7 +226,7 @@ def train(generator, discriminator, dataset_iterator, manager):
     # Loop over our data until we run out
     all_fids = list()
     pbar = tqdm(dataset_iterator, total=1582)
-    for iteration, batch in pbar:
+    for iteration, batch in enumerate(pbar):
 
         # Test this
         noise = tf.random.uniform([args.batch_size, args.z_dim], minval=-1, maxval=1)
@@ -288,7 +288,6 @@ def test(generator):
 
 def main():
     # Load a batch of images (to feed to the discriminator)
-    print("HELLO f")
     dataset_iterator = load_image_batch(args.img_dir, batch_size=args.batch_size, n_threads=args.num_data_threads)
 
     # Initialize generator and discriminator models
