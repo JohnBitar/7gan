@@ -82,7 +82,9 @@ def log(x):
 # Frechet Inception Distance measures how similar the generated images are to the real ones
 # https://nealjean.com/ml/frechet-inception-distance/
 # Lower is better
+print("Downloading model")
 module = tf.keras.Sequential([hub.KerasLayer("https://tfhub.dev/google/tf2-preview/inception_v3/classification/4", output_shape=[1001])])
+print("Done downloading model")
 def fid_function(real_image_batch, generated_image_batch):
     """
     Given a batch of real images and a batch of generated images, this function pulls down a pre-trained inception 
